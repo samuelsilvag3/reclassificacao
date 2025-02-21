@@ -108,17 +108,32 @@ class App extends React.Component {
   render() {
     return (
       <div className="App">
+        <header className="bg-primary bg-gradient shadow-sm mb-4">
+          <div className="container py-3">
+            <div className="row align-items-center">
+              <div className="col-auto">
+                <div className="logo-placeholder bg-light rounded" style={{ width: '150px', height: '50px' }}>
+                  {/* Área reservada para logo */}
+                </div>
+              </div>
+              <div className="col">
+                <h1 className="text-white mb-0 ms-3">Sistema de Classificação de Notas Fiscais</h1>
+              </div>
+            </div>
+          </div>
+        </header>
+
         <DragDropContext onDragEnd={this.onDragEnd}>
           <div className="container">
             <div className="invoice-list">
-              <h2 className="display-6 mb-4">
+              <h2 className="display-6 mb-4 text-primary">
                 <FaFileInvoice className="me-2" />
                 Notas Fiscais por Fornecedor
               </h2>
               <InvoiceList invoices={this.state.invoices} />
             </div>
             <div className="cost-center-list">
-              <h2 className="display-6 mb-4">
+              <h2 className="display-6 mb-4 text-primary">
                 <FaBuilding className="me-2" />
                 Centros de Custo
               </h2>

@@ -62,3 +62,29 @@
 .supplier-container h3:hover {
   background-color: #e9ecef;
 }
+
+.bg-primary {
+  background-color: #0d6efd !important;
+}
+
+.logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.logo-placeholder:after {
+  content: 'Logo';
+}
+
+h1 {
+  font-size: 1.8rem !important;
+}
+
+@media (max-width: 768px) {
+  h1 {
+    font-size: 1.4rem !important;
+  }
+}

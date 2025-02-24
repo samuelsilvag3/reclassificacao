@@ -2,7 +2,7 @@ import React from 'react'
 import { DragDropContext } from 'react-beautiful-dnd'
 import InvoiceList from './InvoiceList.js'
 import CostCenterList from './CostCenterList.js'
-import { FaBuilding, FaFileInvoice } from 'react-icons/fa'
+import { FaBuilding, FaFileInvoice, FaUsers } from 'react-icons/fa'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './App.css'
 import ReactDOM from 'react-dom'
@@ -106,6 +106,17 @@ class App extends React.Component {
   }
 
   render() {
+    // Cálculos para os cards informativos
+    const totalInvoices = Object.values(this.state.classifiedInvoices)
+      .flat()
+      .length;
+    
+    const totalSuppliers = this.state.invoices.length;
+    
+    const processedInvoices = Object.values(this.state.classifiedInvoices)
+      .flat()
+      .length;
+
     return (
       <div className="App">
         <header className="bg-primary bg-gradient shadow-sm mb-4">
@@ -123,12 +134,51 @@ class App extends React.Component {
           </div>
         </header>
 
+        {/* Nova seção de cards informativos */}
+        <div className="container mb-4">
+          <div className="row g-4">
+            <div className="col-md-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title text-primary">
+                    <FaFileInvoice className="me-2" />
+                    Total de Notas
+                  </h5>
+                  <p className="card-text display-6">{totalInvoices}</p>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title text-primary">
+                    <FaBuilding className="me-2" />
+                    Notas Processadas
+                  </h5>
+                  <p className="card-text display-6">{processedInvoices}</p>
+                </div>
+              </div>
+            </div>
+            <div className="col-md-4">
+              <div className="card h-100 border-0 shadow-sm">
+                <div className="card-body">
+                  <h5 className="card-title text-primary">
+                    <i className="fas fa-users me-2"></i>
+                    Total de Fornecedores
+                  </h5>
+                  <p className="card-text display-6">{totalSuppliers}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <DragDropContext onDragEnd={this.onDragEnd}>
           <div className="container">
             <div className="invoice-list">
               <h2 className="display-6 mb-4 text-primary">
                 <FaFileInvoice className="me-2" />
-                Notas Fiscais por Fornecedor
+                Notas Fiscais Disponiveis
               </h2>
               <InvoiceList invoices={this.state.invoices} />
             </div>

@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 import { DragDropContext } from 'react-beautiful-dnd'
 import InvoiceList from './InvoiceList.js'
 import CostCenterList from './CostCenterList.js'
@@ -9,8 +10,8 @@ import ReactDOM from 'react-dom'
 
 const initialInvoices = [
   { 
-    id: 'fornecedor1', 
-    name: 'Fornecedor 1', 
+    id: 'fornecedor1',
+    name: 'Fornecedor 1',
     invoices: [
       { id: 'NF001', number: 'NF001' },
       { id: 'NF002', number: 'NF002' }
@@ -33,8 +34,81 @@ class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      invoices: initialInvoices,
-      classifiedInvoices: {}
+      invoices: [],
+      classifiedInvoices: {},
+      loading: true,
+      error: null
+    }
+  }
+
+  componentDidMount() {
+    this.fetchData()
+  }
+
+  fetchData = async () => {
+    try {
+      const payload = { transportadora: "NSLOG" }
+      
+      console.log('Iniciando requisições...')
+      
+      // Buscar fornecedores e notas em paralelo
+      const [fornecedoresResponse, despesasResponse] = await Promise.all([
+        axios.post('http://127.0.0.1:4000/fornecedores', payload),
+        axios.post('http://127.0.0.1:4000/despesas', payload)
+      ])
+
+      console.log('Resposta fornecedores:', fornecedoresResponse)
+      console.log('Resposta despesas:', despesasResponse)
+
+      // Verificar se as respostas contêm a propriedade 'resultado'
+      const fornecedores = fornecedoresResponse.data.resultado || []
+      const despesas = despesasResponse.data.resultado || []
+
+      // Organizar as notas por fornecedor
+      const invoicesBySupplier = fornecedores.map(fornecedor => {
+        const fornecedorNotas = despesas.filter(
+          nota => nota.CNPJFornecedor === fornecedor.Id
+        )
+
+        return {
+          id: fornecedor.Id,
+          name: fornecedor.Nome_Fantasia || fornecedor.Razao_Social,
+          invoices: fornecedorNotas.map(nota => ({
+            id: nota.Nota.trim(),
+            number: nota.Nota.trim(),
+            valor: nota.ValorParcela,
+            emissao: nota.Emissao,
+            vencimento: nota.Vencimento,
+            evento: nota.DescricaoEvento
+          }))
+        }
+      }).filter(fornecedor => fornecedor.invoices.length > 0)
+
+      console.log('Dados processados:', invoicesBySupplier)
+
+      this.setState({
+        invoices: invoicesBySupplier,
+        loading: false
+      })
+    } catch (error) {
+      console.error('Erro detalhado:', error)
+      let mensagemErro = 'Erro ao carregar dados. Por favor, tente novamente.'
+      
+      if (error.response) {
+        console.error('Dados do erro:', error.response.data)
+        mensagemErro = `Erro do servidor: ${error.response.status} - ${JSON.stringify(error.response.data)}`
+      } else if (error.request) {
+        console.error('Erro de conexão:', error.request)
+        mensagemErro = 'Erro de conexão com o servidor. Verifique se o servidor está rodando.'
+      } else {
+        console.error('Erro:', error.message)
+        mensagemErro = `Erro: ${error.message}`
+      }
+
+      this.setState({
+        error: mensagemErro,
+        loading: false
+      })
     }
   }
 
@@ -106,16 +180,37 @@ class App extends React.Component {
   }
 
   render() {
+    if (this.state.loading) {
+      return (
+        <div className="container mt-5 text-center">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Carregando...</span>
+          </div>
+        </div>
+      )
+    }
+
+    if (this.state.error) {
+      return (
+        <div className="container mt-5">
+          <div className="alert alert-danger" role="alert">
+            {this.state.error}
+          </div>
+        </div>
+      )
+    }
+
     // Cálculos para os cards informativos
-    const totalInvoices = Object.values(this.state.classifiedInvoices)
-      .flat()
-      .length;
+    const totalInvoices = this.state.invoices.reduce(
+      (total, supplier) => total + supplier.invoices.length,
+      0
+    )
     
-    const totalSuppliers = this.state.invoices.length;
+    const totalSuppliers = this.state.invoices.length
     
     const processedInvoices = Object.values(this.state.classifiedInvoices)
       .flat()
-      .length;
+      .length
 
     return (
       <div className="App">
